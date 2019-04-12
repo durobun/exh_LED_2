@@ -1,0 +1,94 @@
+<!DOCTYPE html> 
+<head>
+<meta charset="utf-8" /> 
+<title>WebSocket Test</title> 
+   <script lang="javascript" type="text/javascript"> 
+
+	var wsUrl = "ws://192.168.0.31:81/"; 
+	var output; 
+	var connection = new WebSocket('wsUrl', ['arduino']);
+
+	connection.onopen = function () { 
+		connection.send('Message from Browser to ESP8266 yay its Working!! ' + new Date());   
+		connection.send('ping');    
+		setInterval(function() {    
+			connection.send('Time: ' + new Date());   }, 5000);
+		};
+	connection.onerror = function (error) {  
+		console.log('WebSocket Error ', error);
+		};
+	connection.onmessage = function (e) {  
+		console.log('Server: ', e.data);
+		};
+	 
+	function init(){ 
+		output = document.getElementById("output"); 
+		testWebSocket(); 
+		} 
+
+	function testWebSocket(){ 
+		webSocket = new WebSocket(wsUrl); 
+		webSocket.onopen = function(evt){ onOpen(evt) ;}; 
+		webSocket.onclose = function(evt){ onClose(evt) }; 
+		webSocket.onmessage = function(evt) { onMessage(evt) }; 
+		webSocket.onerror = function(evt) { onError(evt) }; 
+		websocket.sendRGB = function(evt) { sendRGB(evt) };
+		} 
+     
+	function onOpen(evt) { 
+		writeToScreen("CONNECTED"); 
+		doSend("TEST MESSAGE"); 
+		} 
+
+	function onClose(evt){ 
+		writeToScreen("DISCONNECTED") 
+		} 
+
+	function onMessage(evt) { 
+		writeToScreen('<span style = "color: blue;">RESPONSE: ' + evt.data + '</span>');  
+		webSocket.close(); 
+		} 
+
+	function onError(evt) { 
+		writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data); 
+		} 
+
+	function doSend(message) { 
+		writeToScreen("SENT: " + message);  
+		webSocket.send(message); 
+		} 
+
+	function writeToScreen(message) { 
+		var pre = document.createElement("p");  
+		pre.style.wordWrap = "break-word";  
+		pre.innerHTML = message;  
+		output.appendChild(pre); 
+		} 
+
+	function sendRGB() {  
+		var r = parseInt(document.getElementById('r').value).toString(16);  
+		var g = parseInt(document.getElementById('g').value).toString(16);  
+		var b = parseInt(document.getElementById('b').value).toString(16);  
+		if(r.length < 2) { r = '0' + r; } 
+		if(g.length < 2) { g = '0' + g; } 
+		if(b.length < 2) { b = '0' + b; } 
+		var rgb = '#'+r+g+b;  
+		console.log('RGB: ' + rgb); 
+		connection.send(rgb); 
+		}
+
+	window.addEventListener("load", init, false); //object.addEventListener( event, function, useCapture ) 
+
+   </script>
+</head>
+
+<body>
+	LED Control:<br/><br/>
+	R: <input id='r' type='range' min='0' max='255' step='1' onchange='sendRGB();' /><br/>
+	G: <input id='g' type='range' min='0' max='255' step='1' onchange='sendRGB();' /><br/>
+	B: <input id='b' type='range' min='0' max='255' step='1' onchange='sendRGB();' /><br/>
+	<h2>WebSocket Test</h2> 
+	<div id = "output"></div>  
+</body>
+</html>
+# exh_LED_2
